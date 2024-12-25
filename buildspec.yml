@@ -1,0 +1,29 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      docker: 20 # Certifique-se de que a versão do Docker seja compatível
+    commands:
+      - echo "Iniciando fase de instalação"
+      - echo "Verificando versão do Docker"
+      - docker --version
+  pre_build:
+    commands:
+      - echo "Iniciando fase de pré-build"
+      - echo "Fazendo login no Docker Registry"
+      # Substitua <AWS_ACCOUNT_ID>, <AWS_REGION> e <REPOSITORY> conforme necessário
+      - aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 014498650484.dkr.ecr.us-east-2.amazonaws.com/invest-calculator
+  build:
+    commands:
+      - echo "Iniciando fase de build"
+      - docker build -t financial-calculator .
+      - docker tag financial-calculator:latest 014498650484.dkr.ecr.us-east-2.amazonaws.com/invest-calculator:latest
+  post_build:
+    commands:
+      - echo "Iniciando fase de pós-build"
+      - echo "Empurrando a imagem para o Amazon ECR"
+      - docker push 014498650484.dkr.ecr.us-east-2.amazonaws.com/invest-calculator:latest
+artifacts:
+  files:
+    - '**/*'
